@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 
 import Sidebar from "../components/layout/Sidebar";
 import Navbar from "../components/layout/Navbar";
-
+import AiChatWidget from "../components/ai/AiChatWidget.jsx";
 
 function DashboardLayout() {
 
@@ -38,17 +38,20 @@ function DashboardLayout() {
                     }}
                 >
 
+                    {/* Active Route Content */}
                     <Outlet />
 
                 </main>
 
             </div>
 
+            {/* Floating Chat Widget */}
+            <AiChatWidget />
+
         </div>
 
     );
 
 }
-
 
 export default DashboardLayout;

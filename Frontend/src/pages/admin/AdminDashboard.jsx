@@ -44,6 +44,9 @@ import StatCard
 import RecentActivity
     from "../../components/dashboard/RecentActivity";
 
+import AiExecutiveCard
+    from "../../components/ai/AiExecutiveCard";
+
 import {
     getAdminDashboardSummary
 } from "../../services/dashboardService";
@@ -210,6 +213,11 @@ function AdminDashboard() {
                 </Typography>
 
             </Box>
+
+
+            {/* AI EXECUTIVE ADVISOR CARD */}
+
+            <AiExecutiveCard />
 
 
             {/* ERROR */}
@@ -640,6 +648,5 @@ function AdminDashboard() {
     );
 
 }
-
 
 export default AdminDashboard;
