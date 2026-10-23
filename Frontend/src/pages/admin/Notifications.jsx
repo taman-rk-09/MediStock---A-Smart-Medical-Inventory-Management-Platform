@@ -1,3 +1,4 @@
+
 import {
     useCallback,
     useEffect,
@@ -31,226 +32,111 @@ import NotificationTable
 import ReviewNotificationDialog
     from "../../components/notifications/ReviewNotificationDialog";
 
-
 function Notifications() {
-
-    const role =
-        localStorage.getItem("role");
-
+    const role = localStorage.getItem("role");
 
     /* Permissions */
-
-    const canRunCheck =
-        role === "ADMIN";
+    const canRunCheck = role === "ADMIN";
 
     const canManageNotifications =
-        role === "ADMIN" ||
-        role === "PHARMACIST";
+        role === "ADMIN" || role === "PHARMACIST";
 
-    const canDeleteNotifications =
-        role === "ADMIN";
-
+    const canDeleteNotifications = role === "ADMIN";
 
     /* Data */
-
-    const [notifications, setNotifications] =
-        useState([]);
-
-    const [loading, setLoading] =
-        useState(true);
-
-    const [error, setError] =
-        useState("");
-
+    const [notifications, setNotifications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     /* Filters */
-
-    const [searchTerm, setSearchTerm] =
-        useState("");
-
-    const [selectedAlertType, setSelectedAlertType] =
-        useState("ALL");
-
-    const [selectedStatus, setSelectedStatus] =
-        useState("ALL");
-
+    const [searchTerm, setSearchTerm] = useState("");
+    const [selectedAlertType, setSelectedAlertType] = useState("ALL");
+    const [selectedStatus, setSelectedStatus] = useState("ALL");
 
     /* Review dialog */
-
-    const [dialogOpen, setDialogOpen] =
-        useState(false);
-
+    const [dialogOpen, setDialogOpen] = useState(false);
     const [selectedNotification, setSelectedNotification] =
         useState(null);
 
-
     /* Snackbar */
-
-    const [snackbarOpen, setSnackbarOpen] =
-        useState(false);
-
-    const [snackbarMessage, setSnackbarMessage] =
-        useState("");
-
-    const [snackbarSeverity, setSnackbarSeverity] =
-        useState("success");
-
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [snackbarSeverity, setSnackbarSeverity] = useState("success");
 
     /* Load notifications */
+    const loadNotifications = useCallback(async () => {
+        try {
+            setLoading(true);
 
-    const loadNotifications =
-        useCallback(async () => {
+            const data = await getNotifications();
 
-            try {
-
-                setLoading(true);
-
-                const data =
-                    await getNotifications();
-
-                setNotifications(
-                    data || []
-                );
-
-                setError("");
-
-            } catch (error) {
-
-                console.error(
-                    "LOAD NOTIFICATIONS ERROR:",
-                    error
-                );
-
-                setError(
-                    "Unable to load notifications."
-                );
-
-            } finally {
-
-                setLoading(false);
-
-            }
-
-        }, []);
-
+            setNotifications(data || []);
+            setError("");
+        } catch (error) {
+            console.error("LOAD NOTIFICATIONS ERROR:", error);
+            setError("Unable to load notifications.");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
 
     /* Initial load */
-
     useEffect(() => {
-
-        const timer =
-            setTimeout(
-                loadNotifications,
-                0
-            );
-
-        return () =>
-            clearTimeout(timer);
-
+        loadNotifications();
     }, [loadNotifications]);
 
-
     /* Snackbar helper */
-
-    const showSnackbar = (
-        message,
-        severity = "success"
-    ) => {
-
+    const showSnackbar = (message, severity = "success") => {
         setSnackbarMessage(message);
         setSnackbarSeverity(severity);
         setSnackbarOpen(true);
-
     };
 
-
     /* Run notification check */
-
     const handleRunCheck = async () => {
-
         try {
+            const message = await runNotificationCheck();
 
-            const message =
-                await runNotificationCheck();
-
-            showSnackbar(
-                message,
-                "success"
-            );
-
+            showSnackbar(message, "success");
             await loadNotifications();
-
         } catch (error) {
-
-            console.error(
-                "RUN NOTIFICATION CHECK ERROR:",
-                error
-            );
+            console.error("RUN NOTIFICATION CHECK ERROR:", error);
 
             showSnackbar(
                 "Failed to run notification check.",
                 "error"
             );
-
         }
-
     };
 
-
     /* Delete notification */
-
-    const handleDelete = async (
-        notification
-    ) => {
-
-        if (!notification) {
-            return;
-        }
-
+    const handleDelete = async (notification) => {
+        if (!notification) return;
 
         if (!canDeleteNotifications) {
-
             showSnackbar(
                 "Only administrators can delete notifications.",
                 "error"
             );
-
             return;
-
         }
 
-
-        if (
-            notification.status !==
-            "RESOLVED"
-        ) {
-
+        if (notification.status !== "RESOLVED") {
             showSnackbar(
                 "Only resolved notifications can be deleted.",
                 "error"
             );
-
-            return;
-
-        }
-
-
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to delete the notification for "${notification.medicineName}" (Batch: ${notification.batchNumber})?`
-            );
-
-
-        if (!confirmed) {
             return;
         }
 
+        const confirmed = window.confirm(
+            `Are you sure you want to delete the notification for "${notification.medicineName}" (Batch: ${notification.batchNumber})?`
+        );
+
+        if (!confirmed) return;
 
         try {
-
-            await deleteNotification(
-                notification.notificationId
-            );
+            await deleteNotification(notification.notificationId);
 
             showSnackbar(
                 "Notification deleted successfully.",
@@ -258,213 +144,119 @@ function Notifications() {
             );
 
             await loadNotifications();
-
         } catch (error) {
+            console.error("DELETE NOTIFICATION ERROR:", error);
 
-            console.error(
-                "DELETE NOTIFICATION ERROR:",
-                error
-            );
-
-
-            const backendMessage =
-                error?.response?.data;
-
+            const backendMessage = error?.response?.data;
 
             if (
-                typeof backendMessage ===
-                    "string" &&
+                typeof backendMessage === "string" &&
                 backendMessage.trim()
             ) {
-
-                showSnackbar(
-                    backendMessage,
-                    "error"
-                );
-
-            } else if (
-                backendMessage?.message
-            ) {
-
-                showSnackbar(
-                    backendMessage.message,
-                    "error"
-                );
-
-            } else if (
-                error?.message
-            ) {
-
-                showSnackbar(
-                    error.message,
-                    "error"
-                );
-
+                showSnackbar(backendMessage, "error");
+            } else if (backendMessage?.message) {
+                showSnackbar(backendMessage.message, "error");
+            } else if (error?.message) {
+                showSnackbar(error.message, "error");
             } else {
-
                 showSnackbar(
                     "Failed to delete notification.",
                     "error"
                 );
-
             }
-
         }
-
     };
-
 
     /* Filter notifications */
+    const filteredNotifications = useMemo(() => {
+        const search = searchTerm.trim().toLowerCase();
 
-    const filteredNotifications =
-        useMemo(() => {
+        return notifications.filter((notification) => {
+            const medicineName =
+                notification.medicineName?.toLowerCase() || "";
 
-            const search =
-                searchTerm
-                    .trim()
-                    .toLowerCase();
+            const batchNumber =
+                notification.batchNumber?.toLowerCase() || "";
 
+            const category =
+                notification.category?.toLowerCase() || "";
 
-            return notifications.filter(
-                notification => {
+            const matchesSearch =
+                medicineName.includes(search) ||
+                batchNumber.includes(search) ||
+                category.includes(search);
 
-                    const medicineName =
-                        notification
-                            .medicineName
-                            ?.toLowerCase() || "";
+            const matchesAlert =
+                selectedAlertType === "ALL" ||
+                notification.alertType === selectedAlertType;
 
+            const matchesStatus =
+                selectedStatus === "ALL" ||
+                notification.status === selectedStatus;
 
-                    const batchNumber =
-                        notification
-                            .batchNumber
-                            ?.toLowerCase() || "";
-
-
-                    const category =
-                        notification
-                            .category
-                            ?.toLowerCase() || "";
-
-
-                    const matchesSearch =
-                        medicineName.includes(search) ||
-                        batchNumber.includes(search) ||
-                        category.includes(search);
-
-
-                    const matchesAlert =
-                        selectedAlertType ===
-                            "ALL" ||
-                        notification.alertType ===
-                            selectedAlertType;
-
-
-                    const matchesStatus =
-                        selectedStatus ===
-                            "ALL" ||
-                        notification.status ===
-                            selectedStatus;
-
-
-                    return (
-                        matchesSearch &&
-                        matchesAlert &&
-                        matchesStatus
-                    );
-
-                }
-            );
-
-        }, [
-            notifications,
-            searchTerm,
-            selectedAlertType,
-            selectedStatus
-        ]);
-
+            return matchesSearch && matchesAlert && matchesStatus;
+        });
+    }, [
+        notifications,
+        searchTerm,
+        selectedAlertType,
+        selectedStatus
+    ]);
 
     /* Summary */
+    const summary = useMemo(() => ({
+        lowStock: notifications.filter(
+            (notification) => notification.alertType === "LOW_STOCK"
+        ).length,
 
-    const summary =
-        useMemo(() => ({
+        expiringSoon: notifications.filter(
+            (notification) => notification.alertType === "EXPIRING_SOON"
+        ).length,
 
-            lowStock:
-                notifications.filter(
-                    notification =>
-                        notification.alertType ===
-                        "LOW_STOCK"
-                ).length,
+        expired: notifications.filter(
+            (notification) => notification.alertType === "EXPIRED"
+        ).length,
 
-            expiringSoon:
-                notifications.filter(
-                    notification =>
-                        notification.alertType ===
-                        "EXPIRING_SOON"
-                ).length,
+        resolved: notifications.filter(
+            (notification) => notification.status === "RESOLVED"
+        ).length,
 
-            expired:
-                notifications.filter(
-                    notification =>
-                        notification.alertType ===
-                        "EXPIRED"
-                ).length,
-
-            resolved:
-                notifications.filter(
-                    notification =>
-                        notification.status ===
-                        "RESOLVED"
-                ).length,
-
-            reviewed:
-                notifications.filter(
-                    notification =>
-                        notification.status ===
-                        "REVIEWED"
-                ).length
-
-        }), [notifications]);
-
+        reviewed: notifications.filter(
+            (notification) => notification.status === "REVIEWED"
+        ).length
+    }), [notifications]);
 
     /* Review */
-
-    const handleReview =
-        notification => {
-
-            setSelectedNotification(
-                notification
-            );
-
-            setDialogOpen(true);
-
-        };
-
-
-    const handleCloseDialog = () => {
-
-        setDialogOpen(false);
-        setSelectedNotification(null);
-
+    const handleReview = (notification) => {
+        setSelectedNotification(notification);
+        setDialogOpen(true);
     };
 
+    const handleCloseDialog = () => {
+        setDialogOpen(false);
+        setSelectedNotification(null);
+    };
 
     return (
-
-        <Box>
-
-            {/* Page Header */}
-
-            <Box
-                sx={{
-                    mb: 3
-                }}
-            >
-
+        <Box
+            sx={{
+                width: "100%",
+                maxWidth: "100%",
+                minWidth: 0,
+                boxSizing: "border-box"
+            }}
+        >
+            {/* PAGE HEADER */}
+            <Box sx={{ mb: 3 }}>
                 <Typography
                     variant="h4"
-                    fontWeight={700}
                     sx={{
-                        letterSpacing: "-0.5px"
+                        fontWeight: 800,
+                        letterSpacing: "-0.045em",
+                        fontSize: {
+                            xs: "1.65rem",
+                            sm: "2rem"
+                        }
                     }}
                 >
                     Notifications
@@ -474,179 +266,121 @@ function Notifications() {
                     variant="body2"
                     color="text.secondary"
                     sx={{
-                        mt: 0.5
+                        mt: 0.75,
+                        lineHeight: 1.6
                     }}
                 >
                     Monitor stock alerts, expiry warnings
                     and notification activity.
                 </Typography>
-
             </Box>
 
+            {/* SUMMARY CARDS */}
+            <Box sx={{ width: "100%", minWidth: 0, mb: 3 }}>
+                <NotificationSummaryCards summary={summary} />
+            </Box>
 
-            {/* Summary Cards */}
+            {/* FILTERS / ACTIONS */}
+            <Box
+                sx={{
+                    width: "100%",
+                    minWidth: 0,
+                    mb: 3
+                }}
+            >
+                <NotificationToolbar
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    selectedAlertType={selectedAlertType}
+                    onAlertTypeChange={setSelectedAlertType}
+                    selectedStatus={selectedStatus}
+                    onStatusChange={setSelectedStatus}
+                    onRunCheck={handleRunCheck}
+                    showRunCheck={canRunCheck}
+                />
+            </Box>
 
-            <NotificationSummaryCards
-                summary={summary}
-            />
-
-
-            {/* Filters / Actions */}
-
-            <NotificationToolbar
-                searchTerm={searchTerm}
-                onSearchChange={
-                    setSearchTerm
-                }
-
-                selectedAlertType={
-                    selectedAlertType
-                }
-
-                onAlertTypeChange={
-                    setSelectedAlertType
-                }
-
-                selectedStatus={
-                    selectedStatus
-                }
-
-                onStatusChange={
-                    setSelectedStatus
-                }
-
-                onRunCheck={
-                    handleRunCheck
-                }
-
-                showRunCheck={
-                    canRunCheck
-                }
-            />
-
-
-            {/* Error */}
-
+            {/* ERROR */}
             {error && (
-
                 <Alert
                     severity="error"
                     sx={{
                         mb: 3,
-                        borderRadius: 2
+                        borderRadius: "14px"
                     }}
                 >
                     {error}
                 </Alert>
-
             )}
 
+            {/* LOADING / TABLE */}
+            <Box
+                sx={{
+                    width: "100%",
+                    maxWidth: "100%",
+                    minWidth: 0
+                }}
+            >
+                {loading ? (
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            minHeight: 220
+                        }}
+                    >
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <NotificationTable
+                        notifications={filteredNotifications}
+                        canManage={canManageNotifications}
+                        canDelete={canDeleteNotifications}
+                        onReview={handleReview}
+                        onDelete={handleDelete}
+                    />
+                )}
+            </Box>
 
-            {/* Loading / Table */}
-
-            {loading ? (
-
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        minHeight: 220
-                    }}
-                >
-
-                    <CircularProgress />
-
-                </Box>
-
-            ) : (
-
-                <NotificationTable
-                    notifications={
-                        filteredNotifications
-                    }
-
-                    canManage={
-                        canManageNotifications
-                    }
-
-                    canDelete={
-                        canDeleteNotifications
-                    }
-
-                    onReview={
-                        handleReview
-                    }
-
-                    onDelete={
-                        handleDelete
-                    }
-                />
-
-            )}
-
-
-            {/* Review Dialog */}
-
+            {/* REVIEW DIALOG */}
             <ReviewNotificationDialog
                 open={dialogOpen}
-                notification={
-                    selectedNotification
-                }
-                onClose={
-                    handleCloseDialog
-                }
-                onCompleted={
-                    async () => {
+                notification={selectedNotification}
+                onClose={handleCloseDialog}
+                onCompleted={async () => {
+                    handleCloseDialog();
 
-                        handleCloseDialog();
+                    await loadNotifications();
 
-                        await loadNotifications();
-
-                        showSnackbar(
-                            "Notification reviewed successfully.",
-                            "success"
-                        );
-
-                    }
-                }
+                    showSnackbar(
+                        "Notification reviewed successfully.",
+                        "success"
+                    );
+                }}
             />
 
-
-            {/* Snackbar */}
-
+            {/* SNACKBAR */}
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={4000}
-                onClose={() =>
-                    setSnackbarOpen(false)
-                }
+                onClose={() => setSnackbarOpen(false)}
                 anchorOrigin={{
                     vertical: "top",
                     horizontal: "right"
                 }}
             >
-
                 <Alert
                     severity={snackbarSeverity}
                     variant="filled"
-                    onClose={() =>
-                        setSnackbarOpen(false)
-                    }
-                    sx={{
-                        width: "100%"
-                    }}
+                    onClose={() => setSnackbarOpen(false)}
+                    sx={{ width: "100%" }}
                 >
                     {snackbarMessage}
                 </Alert>
-
             </Snackbar>
-
         </Box>
-
     );
-
 }
-
 
 export default Notifications;

@@ -1,8 +1,10 @@
+
 package com.MediStock.app.dto;
 
 import java.time.LocalDateTime;
 
 public class AiInsightResponse {
+
     private String executiveSummary;
     private LocalDateTime generatedAt;
 

@@ -1,4 +1,8 @@
+
+import { useEffect, useState } from "react";
+
 import {
+    Avatar,
     Box,
     Divider,
     List,
@@ -8,478 +12,408 @@ import {
     Typography
 } from "@mui/material";
 
-import DashboardRoundedIcon
-    from "@mui/icons-material/DashboardRounded";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import MedicationRoundedIcon from "@mui/icons-material/MedicationRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import PeopleRoundedIcon from "@mui/icons-material/PeopleRounded";
+import AssessmentRoundedIcon from "@mui/icons-material/AssessmentRounded";
+import ShoppingCartRoundedIcon from "@mui/icons-material/ShoppingCartRounded";
+import NotificationsRoundedIcon from "@mui/icons-material/NotificationsRounded";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import LocalPharmacyRoundedIcon from "@mui/icons-material/LocalPharmacyRounded";
+import PointOfSaleRoundedIcon from "@mui/icons-material/PointOfSaleRounded";
 
-import MedicationRoundedIcon
-    from "@mui/icons-material/MedicationRounded";
-
-import Inventory2RoundedIcon
-    from "@mui/icons-material/Inventory2Rounded";
-
-import LocalShippingRoundedIcon
-    from "@mui/icons-material/LocalShippingRounded";
-
-import PeopleRoundedIcon
-    from "@mui/icons-material/PeopleRounded";
-
-import AssessmentRoundedIcon
-    from "@mui/icons-material/AssessmentRounded";
-
-import ShoppingCartRoundedIcon
-    from "@mui/icons-material/ShoppingCartRounded";
-
-import NotificationsRoundedIcon
-    from "@mui/icons-material/NotificationsRounded";
-
-import LogoutRoundedIcon
-    from "@mui/icons-material/LogoutRounded";
-
-import LocalPharmacyRoundedIcon
-    from "@mui/icons-material/LocalPharmacyRounded";
-
-import PointOfSaleRoundedIcon
-    from "@mui/icons-material/PointOfSaleRounded";
-
-import {
-    NavLink,
-    useNavigate
-} from "react-router-dom";
-
+import { NavLink, useNavigate } from "react-router-dom";
+import ProfileEditorDialog from "../profile/ProfileEditorDialog";
 
 function Sidebar() {
-
     const navigate = useNavigate();
 
-    const role =
-        localStorage.getItem("role");
+    const role = localStorage.getItem("role");
+    const rolePath = role?.toLowerCase() || "staff";
 
-    const email =
-        localStorage.getItem("email");
+    const [profile, setProfile] = useState({
+        name: localStorage.getItem("name") || "",
+        email: localStorage.getItem("email") || "",
+        role: role || "",
+        profilePicture: localStorage.getItem("profilePicture") || ""
+    });
+
+    const [profileDialogOpen, setProfileDialogOpen] = useState(false);
+
+    useEffect(() => {
+        const updateProfile = (event) => {
+            const updatedProfile = event.detail || {};
+
+            setProfile({
+                name:
+                    updatedProfile.name ||
+                    localStorage.getItem("name") ||
+                    "",
+                email:
+                    updatedProfile.email ||
+                    localStorage.getItem("email") ||
+                    "",
+                role:
+                    updatedProfile.role ||
+                    localStorage.getItem("role") ||
+                    "",
+                profilePicture:
+                    updatedProfile.profilePicture ||
+                    localStorage.getItem("profilePicture") ||
+                    ""
+            });
+        };
+
+        window.addEventListener(
+            "medistock-profile-updated",
+            updateProfile
+        );
+
+        return () => {
+            window.removeEventListener(
+                "medistock-profile-updated",
+                updateProfile
+            );
+        };
+    }, []);
 
     const logout = () => {
-
         localStorage.clear();
-
         navigate("/");
-
     };
 
-    const rolePath =
-        role?.toLowerCase() || "staff";
+    const displayName = profile.name.trim() || "My Account";
 
+    const initial =
+        displayName.charAt(0).toUpperCase() ||
+        profile.email.charAt(0).toUpperCase() ||
+        "U";
 
     return (
-
         <Box
+            component="aside"
             sx={{
-                width: 260,
-                height: "100vh",
+                width: 264,
+                height: "calc(100vh - 28px)",
                 position: "sticky",
                 top: 0,
-                flexShrink: 0,
                 display: "flex",
                 flexDirection: "column",
-                backgroundColor:
-                    "background.paper",
-                borderRight:
-                    "1px solid",
-                borderColor:
-                    "divider",
-                overflow: "hidden"
+                borderRadius: "24px",
+                overflow: "hidden",
+                bgcolor: "background.paper",
+                border: "1px solid",
+                borderColor: "divider",
+                boxShadow: "0 8px 30px rgba(15, 23, 42, 0.05)",
+                flexShrink: 0,
+                "@media (max-width: 900px)": {
+                    width: 232,
+                    height: "calc(100vh - 20px)",
+                    borderRadius: "20px"
+                }
             }}
         >
-
-            {/* BRAND */}
-
-            <Box
-                sx={{
-                    height: 72,
-                    px: 3,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1.5
-                }}
-            >
-
+            {/* Brand */}
+            <Box sx={{ px: 3, py: 3 }}>
                 <Box
                     sx={{
-                        width: 40,
-                        height: 40,
-                        borderRadius: 2,
                         display: "flex",
                         alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor:
-                            "primary.main",
-                        color:
-                            "primary.contrastText"
+                        gap: 1.5
                     }}
                 >
-
-                    <LocalPharmacyRoundedIcon
+                    <Box
                         sx={{
-                            fontSize: 25
-                        }}
-                    />
-
-                </Box>
-
-
-                <Box>
-
-                    <Typography
-                        sx={{
-                            fontWeight: 800,
-                            fontSize: "1.1rem",
-                            lineHeight: 1.2,
-                            color:
-                                "text.primary"
+                            width: 42,
+                            height: 42,
+                            borderRadius: "14px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "primary.main",
+                            color: "primary.contrastText"
                         }}
                     >
-                        MediStock
-                    </Typography>
+                        <LocalPharmacyRoundedIcon />
+                    </Box>
 
-                    <Typography
-                        variant="caption"
-                        sx={{
-                            color:
-                                "text.secondary",
-                            lineHeight: 1
-                        }}
-                    >
-                        Inventory Management
-                    </Typography>
+                    <Box>
+                        <Typography
+                            variant="h6"
+                            sx={{
+                                fontWeight: 800,
+                                letterSpacing: "-0.5px",
+                                lineHeight: 1.2
+                            }}
+                        >
+                            MediStock
+                        </Typography>
 
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                        >
+                            Medical Inventory
+                        </Typography>
+                    </Box>
                 </Box>
-
             </Box>
-
 
             <Divider />
 
-
-            {/* NAVIGATION */}
-
+            {/* Navigation */}
             <Box
                 sx={{
                     flex: 1,
                     overflowY: "auto",
-                    overflowX: "hidden",
+                    px: 1.5,
                     py: 2
                 }}
             >
+                <SectionLabel>Workspace</SectionLabel>
 
-                <Typography
-                    variant="caption"
-                    sx={{
-                        display: "block",
-                        px: 3,
-                        mb: 1,
-                        color:
-                            "text.secondary",
-                        fontWeight: 700,
-                        textTransform:
-                            "uppercase",
-                        letterSpacing:
-                            "0.08em"
-                    }}
-                >
-                    Menu
-                </Typography>
-
-
-                <List
-                    disablePadding
-                    sx={{
-                        px: 1.5
-                    }}
-                >
-
+                <List disablePadding>
                     <MenuItem
-                        icon={
-                            <DashboardRoundedIcon />
-                        }
-                        text="Dashboard"
                         to={`/${rolePath}/dashboard`}
+                        icon={<DashboardRoundedIcon />}
+                        label="Dashboard"
                     />
 
-
                     <MenuItem
-                        icon={
-                            <MedicationRoundedIcon />
-                        }
-                        text="Medicines"
                         to={`/${rolePath}/medicines`}
+                        icon={<MedicationRoundedIcon />}
+                        label="Medicines"
                     />
 
-
                     <MenuItem
-                        icon={
-                            <Inventory2RoundedIcon />
-                        }
-                        text="Inventory"
                         to={`/${rolePath}/inventory`}
+                        icon={<Inventory2RoundedIcon />}
+                        label="Inventory"
                     />
-
-
-                    {/* SALES */}
 
                     <MenuItem
-                        icon={
-                            <PointOfSaleRoundedIcon />
-                        }
-                        text="Sales"
                         to={`/${rolePath}/sales`}
+                        icon={<PointOfSaleRoundedIcon />}
+                        label="Sales"
                     />
-
-
-                    {/* ADMIN */}
 
                     {role === "ADMIN" && (
-
                         <>
-
                             <MenuItem
-                                icon={
-                                    <LocalShippingRoundedIcon />
-                                }
-                                text="Suppliers"
-                                to="/admin/suppliers"
+                                to={`/${rolePath}/suppliers`}
+                                icon={<LocalShippingRoundedIcon />}
+                                label="Suppliers"
                             />
 
                             <MenuItem
-                                icon={
-                                    <ShoppingCartRoundedIcon />
-                                }
-                                text="Purchase Orders"
-                                to="/admin/purchase-orders"
+                                to={`/${rolePath}/purchase-orders`}
+                                icon={<ShoppingCartRoundedIcon />}
+                                label="Purchase Orders"
                             />
 
                             <MenuItem
-                                icon={
-                                    <PeopleRoundedIcon />
-                                }
-                                text="Users"
-                                to="/admin/users"
+                                to={`/${rolePath}/users`}
+                                icon={<PeopleRoundedIcon />}
+                                label="Users"
                             />
 
                             <MenuItem
-                                icon={
-                                    <AssessmentRoundedIcon />
-                                }
-                                text="Reports"
-                                to="/admin/reports"
+                                to={`/${rolePath}/reports`}
+                                icon={<AssessmentRoundedIcon />}
+                                label="Reports"
                             />
-
                         </>
-
                     )}
-
-
-                    {/* PHARMACIST */}
 
                     {role === "PHARMACIST" && (
-
                         <>
-
                             <MenuItem
-                                icon={
-                                    <LocalShippingRoundedIcon />
-                                }
-                                text="Suppliers"
-                                to="/pharmacist/suppliers"
+                                to={`/${rolePath}/suppliers`}
+                                icon={<LocalShippingRoundedIcon />}
+                                label="Suppliers"
                             />
 
                             <MenuItem
-                                icon={
-                                    <ShoppingCartRoundedIcon />
-                                }
-                                text="Purchase Orders"
-                                to="/pharmacist/purchase-orders"
+                                to={`/${rolePath}/purchase-orders`}
+                                icon={<ShoppingCartRoundedIcon />}
+                                label="Purchase Orders"
                             />
-
                         </>
-
                     )}
-
-
-                    {/* COMMON */}
-
-                    <MenuItem
-                        icon={
-                            <NotificationsRoundedIcon />
-                        }
-                        text="Notifications"
-                        to={`/${rolePath}/notifications`}
-                    />
-
                 </List>
 
-            </Box>
+                <SectionLabel>Updates</SectionLabel>
 
+                <List disablePadding>
+                    <MenuItem
+                        to={`/${rolePath}/notifications`}
+                        icon={<NotificationsRoundedIcon />}
+                        label="Notifications"
+                    />
+                </List>
+            </Box>
 
             <Divider />
 
-
-            {/* USER / LOGOUT */}
-
-            <Box
-                sx={{
-                    p: 2
-                }}
-            >
-
-                <Box
+            {/* Clickable account card */}
+            <Box sx={{ p: 1.5 }}>
+                <ListItemButton
+                    onClick={() => setProfileDialogOpen(true)}
                     sx={{
-                        px: 1,
-                        mb: 1.5
+                        borderRadius: "16px",
+                        py: 1.5,
+                        px: 1.5,
+                        mb: 1,
+                        "&:hover": {
+                            bgcolor: "action.hover"
+                        }
                     }}
                 >
+                    <ListItemIcon sx={{ minWidth: 46 }}>
+                        <Avatar
+                            src={profile.profilePicture || undefined}
+                            alt={displayName}
+                            sx={{
+                                width: 40,
+                                height: 40,
+                                bgcolor: "primary.light",
+                                color: "primary.dark",
+                                fontWeight: 700
+                            }}
+                        >
+                            {initial}
+                        </Avatar>
+                    </ListItemIcon>
+
+                    <ListItemText
+                        primary={displayName}
+                        secondary={
+                            profile.email ||
+                            profile.role ||
+                            "Edit your account"
+                        }
+                        primaryTypographyProps={{
+                            fontWeight: 700,
+                            fontSize: 13,
+                            noWrap: true
+                        }}
+                        secondaryTypographyProps={{
+                            fontSize: 11,
+                            noWrap: true
+                        }}
+                    />
 
                     <Typography
                         variant="caption"
-                        sx={{
-                            color:
-                                "text.secondary"
-                        }}
+                        color="primary.main"
+                        sx={{ ml: 0.5, fontWeight: 600 }}
                     >
-                        Logged in as
+                        Edit
                     </Typography>
-
-                    <Typography
-                        sx={{
-                            mt: 0.25,
-                            fontSize: "0.82rem",
-                            fontWeight: 600,
-                            color:
-                                "text.primary",
-                            overflow: "hidden",
-                            textOverflow:
-                                "ellipsis",
-                            whiteSpace: "nowrap"
-                        }}
-                    >
-                        {email || "User"}
-                    </Typography>
-
-                </Box>
-
+                </ListItemButton>
 
                 <ListItemButton
                     onClick={logout}
                     sx={{
-                        minHeight: 44,
-                        borderRadius: 2,
+                        borderRadius: "14px",
+                        px: 1.5,
+                        py: 1.2,
                         color: "error.main",
-                        transition:
-                            "all 0.15s ease",
-
                         "&:hover": {
-                            backgroundColor:
-                                "rgba(211, 47, 47, 0.06)"
+                            bgcolor: "error.light",
+                            color: "error.dark"
                         }
                     }}
                 >
-
                     <ListItemIcon
                         sx={{
                             minWidth: 40,
-                            color: "error.main"
+                            color: "inherit"
                         }}
                     >
-
-                        <LogoutRoundedIcon
-                            fontSize="small"
-                        />
-
+                        <LogoutRoundedIcon />
                     </ListItemIcon>
 
                     <ListItemText
                         primary="Logout"
                         primaryTypographyProps={{
                             fontWeight: 600,
-                            fontSize: "0.9rem"
+                            fontSize: 13
                         }}
                     />
-
                 </ListItemButton>
-
             </Box>
 
+            {/* Profile editor dialog */}
+            <ProfileEditorDialog
+                open={profileDialogOpen}
+                onClose={() => setProfileDialogOpen(false)}
+            />
         </Box>
-
     );
-
 }
 
-
-function MenuItem({
-    icon,
-    text,
-    to
-}) {
-
+function SectionLabel({ children }) {
     return (
+        <Typography
+            variant="caption"
+            sx={{
+                display: "block",
+                px: 1.5,
+                mb: 1,
+                mt: 2,
+                color: "text.secondary",
+                fontWeight: 800,
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                fontSize: 10
+            }}
+        >
+            {children}
+        </Typography>
+    );
+}
 
+function MenuItem({ to, icon, label }) {
+    return (
         <ListItemButton
             component={NavLink}
             to={to}
+            end
             sx={{
-                minHeight: 44,
+                borderRadius: "14px",
                 mb: 0.5,
                 px: 1.5,
-                borderRadius: 2,
+                py: 1.2,
                 color: "text.secondary",
-                transition:
-                    "all 0.15s ease",
-
                 "& .MuiListItemIcon-root": {
                     minWidth: 40,
                     color: "inherit"
                 },
-
                 "& .MuiListItemText-primary": {
-                    fontSize: "0.9rem",
+                    fontSize: 13,
                     fontWeight: 600
                 },
-
-                "&:hover": {
-                    backgroundColor:
-                        "action.hover",
-                    color:
-                        "primary.main"
-                },
-
                 "&.active": {
-                    backgroundColor:
-                        "primary.main",
-                    color:
-                        "primary.contrastText",
-                    boxShadow:
-                        "0 2px 6px rgba(25, 118, 210, 0.20)"
+                    bgcolor: "primary.main",
+                    color: "primary.contrastText",
+                    boxShadow: "0 4px 12px rgba(25, 118, 210, 0.22)"
                 },
-
                 "&.active .MuiListItemIcon-root": {
-                    color:
-                        "primary.contrastText"
+                    color: "inherit"
+                },
+                "&:hover:not(.active)": {
+                    bgcolor: "action.hover",
+                    color: "text.primary"
                 }
             }}
         >
-
-            <ListItemIcon>
-                {icon}
-            </ListItemIcon>
-
-            <ListItemText
-                primary={text}
-            />
-
+            <ListItemIcon>{icon}</ListItemIcon>
+            <ListItemText primary={label} />
         </ListItemButton>
-
     );
-
 }
-
 
 export default Sidebar;

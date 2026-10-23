@@ -1,3 +1,6 @@
+
+import { useEffect, useState } from "react";
+
 import {
     AppBar,
     Avatar,
@@ -8,166 +11,179 @@ import {
 
 import { useLocation } from "react-router-dom";
 
-
 function Navbar() {
+    const location = useLocation();
 
-    const name =
-        localStorage.getItem("name");
+    const [profile, setProfile] = useState({
+        name: localStorage.getItem("name") || "",
+        role: localStorage.getItem("role") || "",
+        profilePicture: localStorage.getItem("profilePicture") || ""
+    });
 
-    const location =
-        useLocation();
+    useEffect(() => {
+        const updateProfile = (event) => {
+            const updatedProfile = event.detail || {};
 
-    const pageTitle =
-        getPageTitle(location.pathname);
+            setProfile({
+                name:
+                    updatedProfile.name ||
+                    localStorage.getItem("name") ||
+                    "",
+                role:
+                    updatedProfile.role ||
+                    localStorage.getItem("role") ||
+                    "",
+                profilePicture:
+                    updatedProfile.profilePicture ||
+                    localStorage.getItem("profilePicture") ||
+                    ""
+            });
+        };
+
+        window.addEventListener(
+            "medistock-profile-updated",
+            updateProfile
+        );
+
+        return () => {
+            window.removeEventListener(
+                "medistock-profile-updated",
+                updateProfile
+            );
+        };
+    }, []);
+
+    const pageTitle = getPageTitle(location.pathname);
 
     const initial =
-        name?.trim()?.charAt(0)?.toUpperCase() || "U";
-
+        profile.name.trim().charAt(0).toUpperCase() || "U";
 
     return (
-
         <AppBar
             position="static"
             elevation={0}
+            color="transparent"
             sx={{
-                backgroundColor: "background.paper",
-                color: "text.primary",
-                borderBottom:
-                    "1px solid",
-                borderColor: "divider"
+                borderBottom: "1px solid",
+                borderColor: "divider",
+                bgcolor: "background.paper",
+                color: "text.primary"
             }}
         >
-
             <Toolbar
                 sx={{
-                    minHeight: {
-                        xs: 64,
-                        sm: 72
-                    },
-                    px: {
-                        xs: 2,
-                        sm: 3
-                    },
-                    justifyContent:
-                        "space-between"
+                    minHeight: "76px",
+                    px: { xs: 2, md: 3 },
+                    display: "flex",
+                    justifyContent: "space-between",
+                    gap: 2
                 }}
             >
+                <Box sx={{ minWidth: 0 }}>
+                    <Typography
+                        variant="h5"
+                        sx={{
+                            fontWeight: 800,
+                            letterSpacing: "-0.5px",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap"
+                        }}
+                    >
+                        {pageTitle}
+                    </Typography>
 
-                <Typography
-                    variant="h5"
-                    sx={{
-                        fontWeight: 700,
-                        fontSize: {
-                            xs: "1.25rem",
-                            sm: "1.5rem"
-                        },
-                        letterSpacing:
-                            "-0.01em"
-                    }}
-                >
-                    {pageTitle}
-                </Typography>
-
+                    <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ mt: 0.3 }}
+                    >
+                        Welcome back, {profile.name || "User"}
+                    </Typography>
+                </Box>
 
                 <Box
                     sx={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 1.5
+                        gap: 1.5,
+                        flexShrink: 0
                     }}
                 >
-
-                    <Avatar
-                        sx={{
-                            width: 40,
-                            height: 40,
-                            bgcolor:
-                                "primary.main",
-                            color:
-                                "primary.contrastText",
-                            fontWeight: 700,
-                            fontSize: "0.95rem"
-                        }}
-                    >
-                        {initial}
-                    </Avatar>
-
-
                     <Box
                         sx={{
-                            display: {
-                                xs: "none",
-                                sm: "block"
-                            }
+                            display: { xs: "none", sm: "block" },
+                            textAlign: "right"
                         }}
                     >
-
                         <Typography
-                            sx={{
-                                fontWeight: 600,
-                                color:
-                                    "text.primary",
-                                fontSize:
-                                    "0.9rem",
-                                lineHeight: 1.3
-                            }}
+                            variant="body2"
+                            sx={{ fontWeight: 700 }}
                         >
-                            {name || "User"}
+                            {profile.name || "User"}
                         </Typography>
 
                         <Typography
                             variant="caption"
-                            sx={{
-                                color:
-                                    "text.secondary"
-                            }}
+                            color="text.secondary"
+                            sx={{ textTransform: "capitalize" }}
                         >
-                            MediStock
+                            {profile.role?.toLowerCase() || "staff"}
                         </Typography>
-
                     </Box>
 
+                    <Avatar
+                        src={profile.profilePicture || undefined}
+                        alt={profile.name || "User"}
+                        sx={{
+                            width: 42,
+                            height: 42,
+                            bgcolor: "primary.light",
+                            color: "primary.dark",
+                            fontWeight: 800,
+                            border: "2px solid",
+                            borderColor: "divider"
+                        }}
+                    >
+                        {initial}
+                    </Avatar>
                 </Box>
-
             </Toolbar>
-
         </AppBar>
-
     );
-
 }
-
 
 function getPageTitle(pathname) {
+    const segments = pathname
+        .split("/")
+        .filter(Boolean);
 
-    const pages = [
+    const page = segments[segments.length - 1] || "dashboard";
 
-        ["/medicines", "Medicines"],
+    const titles = {
+        dashboard: "Dashboard",
+        medicines: "Medicines",
+        inventory: "Inventory",
+        sales: "Sales",
+        suppliers: "Suppliers",
+        "purchase-orders": "Purchase Orders",
+        users: "User Management",
+        reports: "Reports & Analytics",
+        notifications: "Notifications",
+        profile: "My Profile"
+    };
 
-        ["/suppliers", "Suppliers"],
+    if (titles[page]) {
+        return titles[page];
+    }
 
-        ["/inventory", "Inventory"],
-
-        ["/sales", "Sales"],
-
-        ["/users", "Users"],
-
-        ["/reports", "Reports"],
-
-        ["/purchase-orders", "Purchase Orders"],
-
-        ["/notifications", "Notifications"]
-
-    ];
-
-    return (
-        pages.find(
-            ([path]) =>
-                pathname.includes(path)
-        )?.[1] || "Dashboard"
-    );
-
+    return page
+        .split("-")
+        .map(
+            word =>
+                word.charAt(0).toUpperCase() + word.slice(1)
+        )
+        .join(" ");
 }
-
 
 export default Navbar;

@@ -1,3 +1,4 @@
+
 package com.MediStock.app.repositories;
 
 import com.MediStock.app.entities.Inventory;
@@ -7,6 +8,7 @@ import com.MediStock.app.enums.AlertType;
 import com.MediStock.app.enums.NotificationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -48,4 +50,8 @@ public interface NotificationRepository
             AlertType alertType
     );
 
+    /**
+     * Counts notifications whose status is in the supplied collection.
+     */
+    long countByStatusIn(Collection<NotificationStatus> statuses);
 }
